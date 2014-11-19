@@ -277,7 +277,7 @@ class Util (object):
         are delimited by a comma. The format of sub-expression is:
             <name><operation><value>
         where <operation> is one of '=', '!=', '<', '<=', '>', '>='
-        
+
         Sub expression can also be:
             <name><operation-start><value-list><operation-end>
 
@@ -291,7 +291,7 @@ class Util (object):
                     #1 - operation
                     #2 - value or list of values depending on operation
         """
-            
+
         if not filter_criteria:
             return (None, ())
 
@@ -529,7 +529,7 @@ class Util (object):
         result = or_groups[-1] if len(or_groups) else None
         for or_group in reversed(or_groups[:-1]):
             result = (or_group, 'or', result)
-        
+
         return result if result else None
 
 
@@ -1257,7 +1257,7 @@ class Configuration (object):
             raise home_exists
 
         if not home_accessible:
-            raise RuntimeError( 
+            raise RuntimeError(
                'Home directory \'%s\' should have \'rwx\' mode' %\
                                                        self.o.home)
 
@@ -1330,7 +1330,7 @@ class Configuration (object):
                 f.write(u'o.' + path + u' = ' + repr(value) + u'\n')
             f.close()
         except IOError, e:
-            # TODO: report error 
+            # TODO: report error
             raise
 
 
@@ -1386,7 +1386,7 @@ class Configuration (object):
                             max_idx = len(lines) - 1
                             for idx, line in enumerate(lines):
                                 if first:
-                                    fo.write(u'o.%s = \\\n' % name)    
+                                    fo.write(u'o.%s = \\\n' % name)
                                     first = False
                                 line = line.replace('\t','\\t').\
                                             replace('\n','\\n')
@@ -1415,7 +1415,7 @@ class Configuration (object):
                     max_idx = len(lines) - 1
                     for idx, line in enumerate(lines):
                         if first:
-                            fo.write(u'o.%s = \\\n' % name)    
+                            fo.write(u'o.%s = \\\n' % name)
                             first = False
                         line = line.replace('\t','\\t').\
                                     replace('\n','\\n')
@@ -1432,7 +1432,7 @@ class Configuration (object):
             os.rename(config_file_name, config_file_name + '~')
             os.rename(config_file_name + '.new', config_file_name)
         except IOError, e:
-            # TODO: report error 
+            # TODO: report error
             raise
 
 
@@ -1559,7 +1559,7 @@ class Configuration (object):
                             file_name, version))
             exec(config_text, {'o': options}, parsed)
             return options
-            
+
         except IOError, e:
             raise
             # TODO: properly handle
@@ -1748,7 +1748,7 @@ class CommandLine (object):
                 u'Please specify subcommand for \'%s\'' % aliases[0])
 
         action_type, action = action_pair
-        
+
         if action_type == 'python':
             return action(self.cfg)
         else:
@@ -2290,7 +2290,7 @@ class CommandLine (object):
 
     def _build_modal_parser(self, commands=None):
         command_help = self._format_command_help(
-                            commands, 
+                            commands,
                             'supported commands are:\n\n') \
                          if commands is not None \
                          else None
@@ -2563,7 +2563,7 @@ class Cache (object):
             raise home_exists
 
         if not home_accessible:
-            raise RuntimeError( 
+            raise RuntimeError(
                'Cache directory \'%s\' should have \'rwx\' mode' % self.home)
 
         self.srv_home = self.home + os.sep + self.srv_name
@@ -2575,7 +2575,7 @@ class Cache (object):
             raise home_exists
 
         if not srv_home_accessible:
-            raise RuntimeError( 
+            raise RuntimeError(
                'Cache directory \'%s\' should have \'rwx\' mode' %\
                self.srv_home)
 
@@ -2588,7 +2588,7 @@ class Cache (object):
             raise issue_home_exists
 
         if not issue_home_accessible:
-            raise RuntimeError( 
+            raise RuntimeError(
                'Cache directory \'%s\' should have \'rwx\' mode' %\
                self.issue_home)
 
@@ -2603,7 +2603,7 @@ class Cache (object):
             raise editmeta_home_exists
 
         if not editmeta_home_accessible:
-            raise RuntimeError( 
+            raise RuntimeError(
                'Cache directory \'%s\' should have \'rwx\' mode' %\
                self.editmeta_home)
 
@@ -2616,7 +2616,7 @@ class Cache (object):
             raise worklog_home_exists
 
         if not worklog_home_accessible:
-            raise RuntimeError( 
+            raise RuntimeError(
                'Cache directory \'%s\' should have \'rwx\' mode' %\
                self.worklog_home)
 
@@ -2713,8 +2713,8 @@ class Cache (object):
             oauth_secret = self.srv_cfg.get('oauth.secret')
             oauth_cert = self.srv_cfg.get('oauth.cert')
             user = self.srv_cfg.get('user')
-            password = self.srv_cfg.get('password')
             server = self.srv_cfg.get('url')
+            password = self.srv_cfg.get('password')
 
             if not server:
                 raise RuntimeError(
@@ -2739,19 +2739,8 @@ class Cache (object):
                 return self.jira
 
             if user and not password:
-                #vpre(VERBOSITY_INFO, u'INFO: Using user/password to connect to JIRA')
-                if not sys.stdin.isatty():
-                    raise RuntimeError(
-                        u'Password or oauth token/secret are missing '\
-                        u'for server \'%s\'' % self.srv_name)
-                pre(u'Please enter password for %s at %s.' % (\
-                        self.user, self.srv_name))
-                try:
-                    password = getpass(u'password: ')
-                except EOFError:
-                    raise RuntimeError(
-                        u'Password is missing for server \'%s\'' %\
-                                self.srv_name)
+                password = get_password_from_keyring_or_console(
+                    self.srv_name, user)
 
             options = { 'server': server, 'verify': False }
             if user:
@@ -2821,7 +2810,7 @@ class Cache (object):
 
         if source is None:
             source = self.source
-        
+
         # 1. process `issues`, `filter` and `order_by`
         if isinstance(issues, basestring):
             issues = (issues,)
@@ -2929,7 +2918,7 @@ class Cache (object):
 
     def update(self, changes):
         """Update issues in cache or on the server.
-        
+
         Parameters:
             changes     - iterable of tuples:
                             #0: issue key
@@ -3427,7 +3416,7 @@ class Cache (object):
             f.write(json.dumps(editmeta, indent=2, sort_keys=True))
             f.close()
             os.rename(tmp_file_name, file_name)
-            
+
         except IOError, e:
             vpre(VERBOSITY_ERRORS,
                 u'ERROR: unable to cache editmeta for the issue %s: %s' %\
@@ -3468,7 +3457,7 @@ class Cache (object):
                 indent=2, sort_keys=True))
             f.close()
             os.rename(tmp_file_name, file_name)
-            
+
         except IOError, e:
             vpre(VERBOSITY_ERRORS,
                 u'ERROR: unable to cache worklogs for the issue %s: %s' %\
@@ -3487,7 +3476,7 @@ class Cache (object):
     def _load_issue(self, issue_key):
         if not issue_key:
             return (None, None)
-        
+
         L1_cached = self.issue_L1.get(issue_key)
         if L1_cached:
             return L1_cached
@@ -3510,7 +3499,7 @@ class Cache (object):
             self.issue_L1[issue.key] = result
 
             return result
-            
+
         except IOError, e:
             vpre(VERBOSITY_ERRORS,
                 u'ERROR: unable to load the issue %s: %s' %\
@@ -3533,7 +3522,7 @@ class Cache (object):
 
         if not isinstance(issue, basestring):
             issue = issue.key
-        
+
         L1_cached = self.editmeta_L1.get(issue)
         if L1_cached:
             return L1_cached
@@ -3554,7 +3543,7 @@ class Cache (object):
             self.editmeta_L1[issue] = result
 
             return result
-            
+
         except IOError, e:
             vpre(VERBOSITY_ERRORS,
                 u'ERROR: unable to load editmeta for the issue %s: %s' %\
@@ -3577,7 +3566,7 @@ class Cache (object):
 
         if not isinstance(issue, basestring):
             issue = issue.key
-        
+
         L1_cached = self.worklog_L1.get(issue)
         if L1_cached:
             return L1_cached
@@ -3602,7 +3591,7 @@ class Cache (object):
             self.worklog_L1[issue] = result
 
             return result
-            
+
         except IOError, e:
             #vpre(VERBOSITY_ERRORS,
                 #u'ERROR: unable to load worklogs for the issue %s: %s' %\
@@ -3659,7 +3648,7 @@ class Cache (object):
                 result_issues += 1
                 if limit > 0 and limit <= result_issues:
                     break
-            else: 
+            else:
                 ts, issue = self._load_issue(key)
                 if not issue:
                     continue
@@ -3740,7 +3729,7 @@ class Cache (object):
                 if go_down or go_up:
                     for linked_issue in self._get_linked_issues(
                                     issue, go_down, go_up, link_types,
-                                    depth, order_by, filter, 
+                                    depth, order_by, filter,
                                     (limit - result_issues) \
                                         if limit > 0 and not order_by \
                                         else -1,
@@ -4031,7 +4020,7 @@ class Template (object):
             raise home_exists
 
         if not home_accessible:
-            raise RuntimeError( 
+            raise RuntimeError(
                'Template directory \'%s\' should have \'rwx\' mode' % self.home)
 
         # set default formatters
@@ -4373,7 +4362,7 @@ class Template (object):
                 result += jicML.emit_value(f_value, f_field, width,
                                            force_markers=multiline)\
                           + u'\n'
-                        
+
             return result
 
 
@@ -4435,7 +4424,7 @@ class Template (object):
                             width,
                             subsequent_indent=u' ' * len(prefix)):
                 result += line + u'\n'
-                            
+
             return result
 
 
@@ -5504,7 +5493,7 @@ class EditingContext(object):
         prepared = OrderedDict()
         forced_markers = \
             self.tpl.get_field_list_to_force_jicML_markers(self.tpl)
-        forced_markers = set([ 
+        forced_markers = set([
             self.field_meta.get_field_name(item, item) \
                 for item in forced_markers ])
 
@@ -5537,7 +5526,7 @@ class EditingContext(object):
                                        u'\'%s\': %s\n' % (
                                             fname, u', '.join(allowed_values))
                                 lines = textwrap.wrap(
-                                            text, 72, 
+                                            text, 72,
                                             break_long_words=True,
                                             initial_indent=u'# ',
                                             subsequent_indent=u'#  ')
@@ -5572,7 +5561,7 @@ class EditingContext(object):
         jicml = u''
         forced_markers = \
             self.tpl.get_field_list_to_force_jicML_markers(self.tpl)
-        forced_markers = set([ 
+        forced_markers = set([
             self.field_meta.get_field_name(item, item) \
                 for item in forced_markers ])
 
@@ -5582,7 +5571,7 @@ class EditingContext(object):
             value = Util.get_issue_field_value(issue, field_id)
             value = self.field_meta.convert_field_value_for_editing(
                                 field_id, value)
-                                    
+
             if value is None:
                 value = u''
 
@@ -5597,7 +5586,7 @@ class EditingContext(object):
                            u'\'%s\': %s\n' % (
                                 field_name, u', '.join(allowed_values))
                     lines = textwrap.wrap(
-                                text, 72, 
+                                text, 72,
                                 break_long_words=True,
                                 initial_indent=u'# ',
                                 subsequent_indent=u'#  ')
@@ -5642,7 +5631,7 @@ class EditingContext(object):
                             if allowed_values:
                                 text = u'Allowed values: %s\n' % (u', '.join(allowed_values))
                                 lines = textwrap.wrap(
-                                            text, 72, 
+                                            text, 72,
                                             break_long_words=True,
                                             initial_indent=u'# ',
                                             subsequent_indent=u'#  ')
@@ -7054,7 +7043,7 @@ def cmd_servers_delete(cfg):
     for name in server_names:
         server = servers.get(name)
         if not server:
-            vpre(VERBOSITY_WARNINGS, 
+            vpre(VERBOSITY_WARNINGS,
                 u'WARNING: Server \'%s\' is not known - skipped' % name)
             continue
         if first:
@@ -7234,6 +7223,43 @@ def vpr(string=u'', end=u'\n', flush=False):
         print(string.encode('utf-8'), file=sys.stdout, end=end)
         if flush:
             sys.stdout.flush()
+
+def get_password_from_keyring_or_console(server, user):
+
+    name = "jic.server.%s" %(server)
+
+    try:
+        from keyring import get_password, set_password
+        password = get_password(name, user)
+    except ImportError:
+        password = None
+
+    if not password:
+        password = get_password_from_console(server, user)
+
+    try:
+        set_password(name, user, password)
+    except:
+        pass
+    return password
+
+
+def get_password_from_console(server, user):
+
+    #vpre(VERBOSITY_INFO, u'INFO: Using user/password to connect to JIRA')
+    if not sys.stdin.isatty():
+        raise RuntimeError(
+            u'Password or oauth token/secret are missing '\
+            u'for server \'%s\'' % server)
+    pre(u'Please enter password for %s at %s.' % (\
+                                                  user, server))
+    try:
+        password = getpass(u'password: ')
+    except EOFError:
+        raise RuntimeError(
+            u'Password is missing for server \'%s\'' %\
+            server)
+    return password
 
 def main():
 
