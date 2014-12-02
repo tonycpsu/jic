@@ -47,7 +47,7 @@ except ImportError:
           'described in INSTALL file. Aborting.')
     sys.exit(1)
 
-__version__ = '14.42.1'
+__version__ = '14.45.1'
 
 
 JIC_PROGRAM_NAME = 'jic'
@@ -2713,8 +2713,8 @@ class Cache (object):
             oauth_secret = self.srv_cfg.get('oauth.secret')
             oauth_cert = self.srv_cfg.get('oauth.cert')
             user = self.srv_cfg.get('user')
-            password = self.srv_cfg.get('password')
             server = self.srv_cfg.get('url')
+            password = self.srv_cfg.get('password')
 
             if not server:
                 raise RuntimeError(
@@ -2739,19 +2739,8 @@ class Cache (object):
                 return self.jira
 
             if user and not password:
-                #vpre(VERBOSITY_INFO, u'INFO: Using user/password to connect to JIRA')
-                if not sys.stdin.isatty():
-                    raise RuntimeError(
-                        u'Password or oauth token/secret are missing '\
-                        u'for server \'%s\'' % self.srv_name)
-                pre(u'Please enter password for %s at %s.' % (\
-                        self.user, self.srv_name))
-                try:
-                    password = getpass(u'password: ')
-                except EOFError:
-                    raise RuntimeError(
-                        u'Password is missing for server \'%s\'' %\
-                                self.srv_name)
+                password = get_password_from_keyring_or_console(
+                    self.srv_name, user)
 
             options = { 'server': server, 'verify': False }
             if user:
@@ -7234,6 +7223,43 @@ def vpr(string=u'', end=u'\n', flush=False):
         print(string.encode('utf-8'), file=sys.stdout, end=end)
         if flush:
             sys.stdout.flush()
+
+def get_password_from_keyring_or_console(server, user):
+
+    name = "jic.server.%s" %(server)
+
+    try:
+        from keyring import get_password, set_password
+        password = get_password(name, user)
+    except ImportError:
+        password = None
+
+    if not password:
+        password = get_password_from_console(server, user)
+
+    try:
+        set_password(name, user, password)
+    except:
+        pass
+    return password
+
+
+def get_password_from_console(server, user):
+
+    #vpre(VERBOSITY_INFO, u'INFO: Using user/password to connect to JIRA')
+    if not sys.stdin.isatty():
+        raise RuntimeError(
+            u'Password or oauth token/secret are missing '\
+            u'for server \'%s\'' % server)
+    pre(u'Please enter password for %s at %s.' % (\
+                                                  user, server))
+    try:
+        password = getpass(u'password: ')
+    except EOFError:
+        raise RuntimeError(
+            u'Password is missing for server \'%s\'' %\
+            server)
+    return password
 
 def main():
 
